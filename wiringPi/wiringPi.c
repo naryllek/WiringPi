@@ -1455,7 +1455,12 @@ int digitalRead (int pin)
 	return LOW ;
 
       lseek  (sysFds [pin], 0L, SEEK_SET) ;
-      read   (sysFds [pin], &c, 1) ;
+
+      if ( read   (sysFds [pin], &c, 1) < 0)
+      {
+        fprintf (stderr, "read command in digitalRead failed: %s\n", strerror (errno)) ;
+      }
+
       return (c == '0') ? LOW : HIGH ;
     }
     else if (wiringPiMode == WPI_MODE_PINS)
@@ -1495,10 +1500,18 @@ void digitalWrite (int pin, int value)
     {
       if (sysFds [pin] != -1)
       {
-	if (value == LOW)
-	  write (sysFds [pin], "0\n", 2) ;
-	else
-	  write (sysFds [pin], "1\n", 2) ;
+        if (value == LOW){
+          if (  write (sysFds [pin], "0\n", 2) < 0)
+          {
+            fprintf (stderr, "write command in digitalWrite failed: %s\n", strerror (errno)) ;
+          }
+        }
+        else{
+          if (  write (sysFds [pin], "1\n", 2) < 0)
+          {
+            fprintf (stderr, "write command in digitalWrite failed: %s\n", strerror (errno)) ;
+          }
+        }
       }
       return ;
     }
@@ -1782,7 +1795,11 @@ int waitForInterrupt (int pin, int mS)
 //	A one character read appars to be enough.
 //	Followed by a seek to reset it.
 
-  (void)read (fd, &c, 1) ;
+  if ( read (fd, &c, 1)  < 0)
+  {
+  	//just a dummy read, no error checking needed
+  }
+
   lseek (fd, 0, SEEK_SET) ;
 
   return x ;
@@ -1897,9 +1914,12 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 // Clear any initial pending interrupt
 
   ioctl (sysFds [bcmGpioPin], FIONREAD, &count) ;
-  for (i = 0 ; i < count ; ++i)
-    read (sysFds [bcmGpioPin], &c, 1) ;
+  for (i = 0 ; i < count ; ++i) {
+    if (read(sysFds[bcmGpioPin], &c, 1) < 0) {
+      return wiringPiFailure (WPI_FATAL, "wiringPiISR: unable to read: %s\n", strerror (errno)) ;
+    }
 
+  }
   isrFunctions [pin] = function ;
 
   pthread_mutex_lock (&pinMutex) ;

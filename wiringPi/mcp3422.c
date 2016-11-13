@@ -26,6 +26,8 @@
 
 
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <fcntl.h>
@@ -47,7 +49,13 @@ void waitForConversion (int fd, unsigned char *buffer, int n)
 {
   for (;;)
   {
-    read (fd, buffer, n) ;
+
+    if ( read (fd, buffer, n) < 0)
+    {
+      fprintf (stderr, "read command in waitForConversion failed: %s\n", strerror (errno)) ;
+    }
+
+
     if ((buffer [n-1] & 0x80) == 0)
       break ;
     delay (1) ;

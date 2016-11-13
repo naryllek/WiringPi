@@ -233,13 +233,20 @@ static void doLoad (int argc, char *argv [])
   if (!moduleLoaded (module1))
   {
     sprintf (cmd, "/sbin/modprobe %s%s", module1, args1) ;
-    system (cmd) ;
+    if ( system (cmd) < 0)
+    {
+      fprintf (stderr, "Shell command failed: %s\n", strerror (errno)) ;
+    }
+
   }
 
   if (!moduleLoaded (module2))
   {
     sprintf (cmd, "/sbin/modprobe %s%s", module2, args2) ;
-    system (cmd) ;
+    if ( system (cmd) < 0)
+    {
+      fprintf (stderr, "Shell command failed: %s\n", strerror (errno)) ;
+    }
   }
 
   if (!moduleLoaded (module2))
@@ -293,13 +300,19 @@ static void doUnLoad (int argc, char *argv [])
   if (moduleLoaded (module1))
   {
     sprintf (cmd, "/sbin/rmmod %s", module1) ;
-    system (cmd) ;
+      if ( system (cmd) < 0)
+      {
+          fprintf (stderr, "Shell command failed: %s\n", strerror (errno)) ;
+      }
   }
 
   if (moduleLoaded (module2))
   {
     sprintf (cmd, "/sbin/rmmod %s", module2) ;
-    system (cmd) ;
+      if ( system (cmd) < 0)
+      {
+          fprintf (stderr, "Shell command failed: %s\n", strerror (errno)) ;
+      }
   }
 }
 

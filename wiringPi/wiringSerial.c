@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
@@ -143,7 +144,10 @@ void serialClose (const int fd)
 
 void serialPutchar (const int fd, const unsigned char c)
 {
-  write (fd, &c, 1) ;
+  if ( write (fd, &c, 1) < 0)
+  {
+    fprintf (stderr, "read command in serialPutchar failed: %s\n", strerror (errno)) ;
+  }
 }
 
 
@@ -155,7 +159,11 @@ void serialPutchar (const int fd, const unsigned char c)
 
 void serialPuts (const int fd, const char *s)
 {
-  write (fd, s, strlen (s)) ;
+  if (  write (fd, s, strlen (s)) < 0)
+  {
+    fprintf (stderr, "write command in serialPuts failed: %s\n", strerror (errno)) ;
+  }
+
 }
 
 /*

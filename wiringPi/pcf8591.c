@@ -24,7 +24,9 @@
  */
 
 #include <unistd.h>
-
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
 #include "wiringPi.h"
 #include "wiringPiI2C.h"
 
@@ -41,7 +43,12 @@ static void myAnalogWrite (struct wiringPiNodeStruct *node, int pin, int value)
   unsigned char b [2] ;
   b [0] = 0x40 ;
   b [1] = value & 0xFF ;
-  write (node->fd, b, 2) ;
+
+  if ( write (node->fd, b, 2) < 0)
+  {
+    fprintf (stderr, "write command in myAnalogWrite failed: %s\n", strerror (errno)) ;
+  }
+
 }
 
 
