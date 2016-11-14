@@ -144,6 +144,9 @@ void serialClose (const int fd)
 
 void serialPutchar (const int fd, const unsigned char c)
 {
+//    printf("\nserialPutChar: 0x%x ", c);
+//    //fflush(stdout);
+
   if ( write (fd, &c, 1) < 0)
   {
     fprintf (stderr, "read command in serialPutchar failed: %s\n", strerror (errno)) ;
@@ -157,37 +160,42 @@ void serialPutchar (const int fd, const unsigned char c)
  *********************************************************************************
  */
 
-void serialPuts (const int fd, const char *s)
+void serialPuts (const int fd, const unsigned char *s, const unsigned char length)
 {
-  if (  write (fd, s, strlen (s)) < 0)
+//  for (int i = 0; i < length; i++) {
+//    printf("\nserialPuts(%d): 0x%x ",i, s[i]);
+//    //fflush(stdout);
+//  }
+  if (  write (fd, s, length) < 0)
   {
-    fprintf (stderr, "write command in serialPuts failed: %s\n", strerror (errno)) ;
+    fprintf (stderr, "WiringSerial: write command in serialPuts failed: %s\n", strerror (errno)) ;
   }
 
 }
 
-/*
- * serialPrintf:
- *	Printf over Serial
- *********************************************************************************
- */
 
-void serialPrintf (const int fd, const char *message, ...)
-{
-  va_list argp ;
-  char buffer [1024] ;
-
-  va_start (argp, message) ;
-    vsnprintf (buffer, 1023, message, argp) ;
-  va_end (argp) ;
-
-  serialPuts (fd, buffer) ;
-}
+///*
+// * serialPrintf:
+// *	Printf over Serial
+// *********************************************************************************
+// */
+//
+//void serialPrintf (const int fd, const unsigned char *message, ...)
+//{
+//  va_list argp ;
+//  unsigned char buffer [1024] ;
+//
+//  va_start (argp, message) ;
+//    vsnprintf (buffer, 1023, message, argp) ;
+//  va_end (argp) ;
+//
+//  serialPuts (fd, buffer,) ;
+//}
 
 
 /*
  * serialDataAvail:
- *	Return the number of bytes of data avalable to be read in the serial port
+ *	Return the number of bytes of data available to be read in the serial port
  *********************************************************************************
  */
 
@@ -210,12 +218,29 @@ int serialDataAvail (const int fd)
  *********************************************************************************
  */
 
-int serialGetchar (const int fd)
+unsigned char serialGetchar (const int fd)
 {
   uint8_t x ;
 
   if (read (fd, &x, 1) != 1)
     return -1 ;
 
+//  fprintf (stdout,"serialGetchar 0x%x\n", x) ;
+//  fflush (stdout) ;
+
   return ((int)x) & 0xFF ;
 }
+
+
+unsigned char serialGetchars (const int fd, unsigned char * buffer, unsigned char len)
+{
+  uint8_t i = 0;
+  while (serialDataAvail (fd) && i < len)
+  {
+    buffer[i] = serialGetchar (fd) ;
+    i += 1;
+  }
+  return i;
+}
+
+
